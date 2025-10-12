@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Send Location</title>
+</head>
+<body>
+  <h3>Getting location…</h3>
+  <script>
+    function sendLoc(lat, lon, acc) {
+      fetch('https://your-server.example/receive-location', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({lat, lon, acc, t: Date.now()})
+      }).then(()=>{document.body.innerHTML='<h3>Location sent ✅</h3>';})
+      .catch(err=>{document.body.innerHTML='<p>Send failed ❌</p>'; console.error(err);});
+    }
+
+    if (!navigator.geolocation) {
+      document.body.innerHTML='<p>Geolocation not supported</p>';
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        pos => sendLoc(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
+        err => {document.body.innerHTML='<p>Permission denied</p>'; console.error(err);},
+        {enableHighAccuracy:true, timeout:10000, maximumAge:0}
+      );
+    }
+  </script>
+</body>
+</html>
