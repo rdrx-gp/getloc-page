@@ -1,44 +1,54 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>Send Location</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align:center; margin-top: 20vh; }
+    h3 { color: #333; }
+    p { color: #555; }
+  </style>
 </head>
 <body>
   <h3>Getting location…</h3>
+
   <script>
-    function sendLoc(lat, lon, acc) {
-      fetch('https://subunequal-foxiest-jolie.ngrok-free.dev/receive-location', {   <!-- ✅ your real Node.js server URL -->
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({lat, lon, acc, t: Date.now()})
-      })
-      .then(() => {
-        document.body.innerHTML = `
-          <h3>Location sent ✅</h3>
-          <p>Latitude: ${lat}</p>
-          <p>Longitude: ${lon}</p>
-          <p>Accuracy: ±${acc} meters</p>
-        `;
-      })
-      .catch(err => {
-        document.body.innerHTML = '<p>Send failed ❌</p>';
-        console.error(err);
-      });
+    async function sendLoc(lat, lon, acc) {
+      try {
+        const response = await fetch('https://subunequal-foxiest-jolie.ngrok-free.dev/receive-location', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({lat, lon, acc, time: Date.now(), source: 'github-webpage'})
+        });
+
+        if (response.ok) {
+          document.body.innerHTML = '<h3>✅ Location sent successfully!</h3><p>You may now close this page.</p>';
+        } else {
+          document.body.innerHTML = '<h3>❌ Server rejected request</h3>';
+        }
+      } catch (error) {
+        console.error('Send failed', error);
+        document.body.innerHTML = '<h3>❌ Sending failed (network error)</h3>';
+      }
     }
 
-    if (!navigator.geolocation) {
-      document.body.innerHTML = '<p>Geolocation not supported ❌</p>';
-    } else {
+    function getLocation() {
+      if (!navigator.geolocation) {
+        document.body.innerHTML = '<h3>❌ Geolocation not supported by your browser.</h3>';
+        return;
+      }
+
       navigator.geolocation.getCurrentPosition(
         pos => sendLoc(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
         err => {
-          document.body.innerHTML = '<p>Permission denied 🚫</p>';
-          console.error(err);
+          console.warn('Permission or retrieval error:', err);
+          document.body.innerHTML = '<h3>⚠️ Location access denied or unavailable.</h3>';
         },
-        {enableHighAccuracy: true, timeout: 10000, maximumAge: 0}
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
+
+    window.onload = getLocation;
   </script>
 </body>
 </html>
