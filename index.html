@@ -8,21 +8,35 @@
   <h3>Getting location…</h3>
   <script>
     function sendLoc(lat, lon, acc) {
-      fetch('https://your-server.example/receive-location', {
+      fetch('https://subunequal-foxiest-jolie.ngrok-free.dev/receive-location', {   <!-- ✅ your real Node.js server URL -->
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({lat, lon, acc, t: Date.now()})
-      }).then(()=>{document.body.innerHTML='<h3>Location sent ✅</h3>';})
-      .catch(err=>{document.body.innerHTML='<p>Send failed ❌</p>'; console.error(err);});
+      })
+      .then(() => {
+        document.body.innerHTML = `
+          <h3>Location sent ✅</h3>
+          <p>Latitude: ${lat}</p>
+          <p>Longitude: ${lon}</p>
+          <p>Accuracy: ±${acc} meters</p>
+        `;
+      })
+      .catch(err => {
+        document.body.innerHTML = '<p>Send failed ❌</p>';
+        console.error(err);
+      });
     }
 
     if (!navigator.geolocation) {
-      document.body.innerHTML='<p>Geolocation not supported</p>';
+      document.body.innerHTML = '<p>Geolocation not supported ❌</p>';
     } else {
       navigator.geolocation.getCurrentPosition(
         pos => sendLoc(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
-        err => {document.body.innerHTML='<p>Permission denied</p>'; console.error(err);},
-        {enableHighAccuracy:true, timeout:10000, maximumAge:0}
+        err => {
+          document.body.innerHTML = '<p>Permission denied 🚫</p>';
+          console.error(err);
+        },
+        {enableHighAccuracy: true, timeout: 10000, maximumAge: 0}
       );
     }
   </script>
